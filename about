@@ -1,0 +1,339 @@
+##mysql进入数据库：
+####连接服务器   
+mysql -h localhost -u root -p默认为localhost   
+=>mysql -u root -p
+
+####退出语句 
+	or \g   
+####进入数据库 
+	show databases   
+####创建数据库 
+	create database XX  
+####删除数据库  
+	drop database XX   
+####进入当前数据库   
+	use XX;   
+####创建表  
+	create table Xxx (   
+	列名 数据类型,  
+	列名 数据类型,
+	列名 数据类型   
+	);   
+
+####删除表
+	drop table Xxx;
+####查看表结构
+	desc Xxx;
+####查看数据 
+	select * from Xxx;
+####插入:
+	insert
+	into Xxx()
+	values ();
+	e.g插入数据(留言)
+	insert 
+	into student(Sname,Sno,Sage,Sdept)
+	values('刘',20156840,20,'MS');
+
+####修改:
+	update Xxx
+	set (要修改的值)
+	where (条件);
+	e.g
+	update Student;
+	set Sname='李'
+	where 条件
+
+####删除
+	delect 
+	from Xxx
+	where (条件);
+	e.g删除表的某一行
+	delect 
+	from Student
+	where Sname='王';
+
+####查询数据
+	select *（要显示的列名）
+	from Xxx;
+
+####插入列
+	alter table Xxx(数据库)  
+	add 
+	Xxx(增加的列名) 类型(  )
+
+
+####字符集问题：
+set names gbk;   
+(出现乱码)存在字符集问题(默认建表一般用utf——8)而在windows下窗口是GBK，因此需要声明字符集
+
+##MySQL服务器:
+建一个库——表(实现表的增删改)，所谓的建表，就是声明列的过程，再在对应的列里插入值。数据是以文字的形式放在硬盘(控制列的宽度)   
+###详解列类型：
+###数值型
+####整型
+	Tinyint
+		1：占据的空间:1字节(8位) 
+		2：存储的范围:无符号：0~2^8-1 有符号：表示负数，可以用最高位来标志符号位：-2^7~2^8-1
+		整型列的可选属性
+		tinyint(M不影响存储范围，代表宽度，在zerofill时有意义) unsigned(无符号类型,非负,影响存储范围) zerofill(零填充)
+		列可以声明默认值，而且推荐声明默认值not null default 0 (不允许为null而是0) 
+	Smallint(2字节)
+	Mediumint(3字节)
+	Int(4字节)
+	bigint(8字节)
+	
+####小数型/浮点型,定点型
+		float(M,D) M精度(总位数) D标度(小数位)  e.gfloat(6,2)1234.33   是否四舍五入，如果要入位是5，看前面一位
+		decimal(M,D)定点型,更加精确
+
+####字符型
+	char(M) 定长字符串 M:代表宽度,即可以容纳的字符数
+	varchar(M) 变长字符串 M:代表宽度,即可以容纳的字符数
+	text 文本串
+		char(M)M个字符，如果存M个字符，实占M个 利用率i/M<=100%   实占不足时，用空格补齐，取出来的时候，把后面空格去掉（定长速度快）
+		varchar(M)M个字符，实存字符,实占i字符+(1~2字节) 利用率i/(i+1~2)<100%   
+char和varchar型的选择原则：   
+1、空间利用效率，四字成语表，char(4)   
+2、速度
+####日期/时间型
+	年—year
+	年—月—日
+	year类型：1个字节 表示 1901-2155 如果输入2位'00-69'表示2000-2069，'70-99'表示1970-1999
+	Date类型：典型格式 xxxx-xx-xx
+	time类型:典型格式 hh:mm:ss
+	Datetime类型：典型格式 xxxx-xx-xx hh:mm:ss
+时间戳(在开发中很少用日期时间类型来表示一个需要的精确秒的列)：1970-01-01 00:00:00到当前的秒数   
+#####enum枚举类型
+e.g create table Stu(
+Ssex enum('男'，'女')
+)；
+
+##查询子句
+	where 表达式(=,!=/<>,>,<,>=,<=,in,between and,or, and ,not)   
+		in(值1，值2、、、值N)等于值1-N中任意一个
+		between 值1 and 值2 在值1和值2之间
+	模糊查询： like
+		通配符：'%' 通配任意字符，'_' 通配单个字符
+	
+	group by 分组，一般和统计函数配合使用(max,min,avg,sum,count(求总行数))   
+	having 数据在表中，表在硬盘或内存以文件形式存在，where就是针对表文件发挥作用的
+	
+	order by 排序 升序[asc] 降序[desc] 可以按多字段排序 值1，值2 asc/desc
+		按照价格降序排列
+		select id,name,price
+		from SC
+		order by price desc;
+		
+	limit 在语句的最后，限制条目  limit[offset][N]  offset：偏移量   N：取出条目 offset默认为0.
+		取价格第4到第六高的商品
+		select name
+		from student
+		order by price desc
+		limit 3,3;
+五个子句有顺序要求：where，group by,having,order by,limit.
+##子查询
+	where型子查询(指把内层查询的结果作为外查询的比较)
+		取id最大的
+		select id,name
+		from SC
+		order by id desc
+		limit 1;
+		
+		select id,name
+		from SC
+		where id in
+			(select max(id)
+			from SC
+			);
+	from型子查询(把内层的查询结果当成临时表，供外层查询)
+		select *
+		from（
+			select id,name
+			from goods
+			order by id asc
+			）as tmp
+		group by id;
+
+		select name 
+		from (
+			select name,count(*) as gk
+			from stu
+			where score(60 
+			group by name 
+			having gk)=2
+		)as tmp;
+	exists子查询：把外层的查询结果拿到内层，看内层的查询是否成立
+		select cat_id,cat_name
+		from cagtegory
+		where exists(
+			select * 
+			from goods
+			where goods.cat_id=cagtegory.cat_id
+		)；
+
+####union 联合
+作用：把两次或者多次查询结果合并，多长sql语句的列名可以不一致，以第一个sql的列名为准   
+
+如果不同的语句中取出的行，有完全相同的（每个列的值都相同）那么相同的行将会合并   
+如果不去重复，可以加all来指定   
+如果子句中有order by，limit 必须加()  
+####连续(连接)
+集合的特点：   
+集合相乘，笛卡尔积（两个集合的完全组合）  
+左连接left   
+	Select 列1，列2 N 
+	from tableA left join tableB
+	on tableA列  =tableB
+		select boy.*,girl.*
+		from boy left join girl
+		on boy.flower=girl.flower;
+此表连接成一张大表，完全当成普通表看 where group having、、、照常写   
+以左表为准，至少每行，如果右表没有匹配的则null补齐
+	
+右连接right   
+	Select 列1，列2 N 
+	from tableA right join tableB
+	on tableA列  =tableB
+此表连接成一张大表，完全当成普通表看 where group having、、、照常写   
+
+内连接inner
+	Select 列1，列2 N 
+	from tableA inner join tableB
+	on tableA列  =tableB
+此表连接成一张大表，完全当成普通表看 where group having、、、照常写   
+查询左右表都有的数据，即不要左右连接中null的那一部分  
+不支持外连接，但是可以用union来实现    
+###表增加列，修改列，删除列
+#####增加列
+	alter table 表名 add 列名 列类型
+增加的列默认在最后一列   
+	after可以声明 alter table 表名 add 列(添加的列) after 列(要求加入此列前面)
+	声明放在第一列 alter table 表名 add 列声明 first
+#####修改列
+	alter table 表名 change 被改变的列名 列声明
+#####删除列
+	alter table  表明 drop 列名
+
+##视图view
+####视图的定义：
+由查询结果形成的虚拟表。   
+####视图的创建语句：   
+	create view 视图名 as
+		select xxx
+		from xx
+		where 、、、
+####好处：
+1、简化查询   
+2、进行权限控制（表的权限封闭，但是开放相应的视图权限，视图只开放部分数据）   
+3、大数据分表可以用到(分表 id取模来计算 id%4+1=[1,2,3,4])   
+####删除视图
+	drop view 视图名
+####视图的修改
+	alter view as select xxxx
+####视图与表的关系：   
+视图是表的查询结果，自然表的数据改变了，影响视图的结果   
+####视图的algorithm
+	algorithm=merge/temptable/underfined
+	merge：引用视图时，引用视图的语句与定义视图的语句合并
+	temptable：当引用视图时，根据视图的创建语句简历一个临时表
+	undefined：未定义，自动，让系统帮你选
+##触发器trigger
+####触发器的定义：
+	监视某种情况并触发某种操作   
+####触发器的应用场合：   
+	可以监视(触发)事件：增删改 监视地点：table 触发时间：after/before   
+####触发器的创建语法：   
+	create trigger triggerName
+	after/brfore insert/update/delete(监视事件) on 表名(监视地点)
+	for each row
+####删除触发器：   
+	drop trigger 触发器名   
+####创建简单的触发器：   
+	create trigger tg1
+	after insert on o
+	for each row
+	begin 
+	update g set num=num-new.列名 where id=new.列名;
+	end$
+####触发器引用行的值：      
+	create trigger tg1
+	after update on o
+	for each row
+	begin 
+	update g set num=num + old.列名-new.列名 where id=new.列名;
+	end$
+对于insert而言，新增的行，用new来表示。对于uodate来说，被修改的行，修改前用old来表示，old列名引用被修改之前行中的值；修改后的数据，用new来表示，new列名引用被修改之后行中的值。
+####after和before的区别:   
+after是先完成数据的增、删、改，在改触发，触发中的语句晚于增、删、改，无法影响前面的增删改动作   
+before是先完成触发，再增删改，触发的语句先于监视的增删改，我们有机会判断，修改即将发生的操作。   
+##存储引擎
+存储引擎：数据库对同样的数据，有着不同的存储方式和管理方式，在mysql中，称为存储引擎     
+####常用的表索引：   
+Myisam：批量插入的速度高，不支持事务安全，支持全文索引，锁机制是表锁。   
+InnoDB：批量插入的速度低，支持事务安全，5.5开始支持全文索引，锁机制是行锁。
+######例
+	create table account(
+	id int,
+	name varchar(10),
+	money int
+	)engine=innodb charset=utf8;   
+####事务：
+原子性：指一组操作，要么成功执行，要么不执行；    
+隔离性：在所有的操作没有执行完毕之前，其他会话不能够看到中间改变的过程；  
+一致性：事务发生前和发生后，数据的总额依然比配   
+持久性：当事务完成后，其影响应该保留下来，不能撤销   
+开启事务：start transaction;       
+commit 提交   
+rollback 回滚      
+##备份与恢复(不进入mysql)
+备份：Mysqldump可以导出库，表   
+#####备份语句
+	1：导出xx库下面的表
+	Mysqldump -u 用户名(root) -p 密码 库名 表1 表2 表3 >地址/备份文件名称   
+	导出的是建表语句及insert语句
+	2：导出一个库下面的所有表
+	Mysqldump -u 用户名 -p密码 库名 >地址/备份文件名称
+	3：导出以库为单位导出
+	Mysqldump -u 用户名 -p密码 -B 库1 库2 库3 >地址/备份文件名称
+	4：导出所有库
+	Mysqldump -u 用户名 -p密码 -A >地址/备份文件名称
+#####恢复语句
+	恢复：以库为单位导出的sql文件    
+	1：登陆到mysql命令行 
+	对于库级的备份文件  
+	mysql>source 备份文件地址  
+	对于表级的备份文件
+	mysql > use 表名 
+	2：不登陆到mysql命令行
+	针对库级的备份文件
+	mysql -uroot -p密码 <库级备份文件地址
+	针对表级的备份文件
+	mysql -u用户名 -p 密码 库名 <表级备份文件地址
+##索引
+好处：加快了查询的速度(select)   
+坏处：降低了增删改的速度，增大了表的文件的大小
+索引：btree(二叉数)索引log2N，hash(哈希)索引   
+使用原则：不过度索引，索引条件列(where后面最频繁的条件比较适宜索引)，索引散列值，过于集中的值不要索引。
+####索引的使用
+	普通索引：index仅仅是加快了查询的速度
+	唯一索引：unique index行上的值不能重复
+	主键索引：primary key不能重复
+		主键必唯一，但是唯一索引不一定是主键。一张表上，只能有一个主键，但是可以用一个或者多个唯一索引
+	全文索引:fulltext index在mysql的默认情况下对中文的意义不大
+		全文索引的用法：match （全文索引名）against('keyword')
+		关于全文索引的停止词：全文索引不针对非常频繁的词作索引
+查看一张表上的索引：show index from 表名 
+####索引的建立
+建立索引：
+	alter table 表名 add index/unique/fulltext[索引名](列名)
+	alter table 表名 add primary key(列名)
+删除索引：
+	alter table 表名 drop index 索引名
+	删除主键：alter table 表名 drop primary key
+##mysql存储过程
+概念类似于函数，就是把一段代码封装起来，当要执行这一段代码的时候，可以通过调用改存储过程来实现，在封装的语句体里面，可以用if/else,case,while等控制结构。
+###    
+	查看现有的存储过程：show procedure status   
+	删除存储过程 drop procdure 存储过程的名字
+	调用存储过程： call 存储过程的名字()
